@@ -1,0 +1,11 @@
+# makepkg build output and downloaded sources
+/src/
+/pkg/
+*.pkg.tar.*
+*.log
+Mudlet-*.tar.xz
+*.rockspec
+/lrexlib/
+/luasql/
+/lua-zip/
+/lua-yajl/
