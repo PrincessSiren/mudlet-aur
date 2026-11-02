@@ -8,7 +8,7 @@
 # Contributor: Xabre <xabre @archlinux.info>
 
 pkgname=mudlet
-pkgver=5.0.1
+pkgver=5.1.0
 pkgrel=1
 _lrexlib_ver=2.9.4
 _luasql_ver=2.6.0     # Mudlet's DB.lua breaks on LuaSQL >= 2.8 (system lua51-sql-sqlite)
@@ -38,7 +38,7 @@ source=("https://www.mudlet.org/wp-content/files/Mudlet-${pkgver}.tar.xz"
         "https://luarocks.org/lua-zip-0.2-0.rockspec"
         "https://luarocks.org/lua-yajl-${_luayajl_ver}-1.rockspec")
 noextract=("Mudlet-${pkgver}.tar.xz")
-sha256sums=('ff07ac3e56816e4fa5786a90201d8d423a813d7912215d9f050e84e799685c74'
+sha256sums=('bd23e5c01ed9593b8c9eddbec2c02c17ff9ea988959d8962c3626e43f17b03ce'
             'SKIP'
             'SKIP'
             'SKIP'
@@ -63,8 +63,13 @@ build() {
     local rock
     for rock in lrexlib:lrexlib-pcre2-${_lrexlib_ver}-1 luasql:luasql-sqlite3-2.6.1-3 lua-zip:lua-zip-0.2-0 \
                 lua-yajl:lua-yajl-${_luayajl_ver}-1; do
+        # lrexlib and libssh both export buffer_free, and libssh gets loaded
+        # into Mudlet through Qt Multimedia's ffmpeg backend. Bind lrexlib's
+        # own calls locally so they don't end up in libssh's copy.
+        local libflag="-shared"
+        [[ ${rock%%:*} == lrexlib ]] && libflag+=" -Wl,-Bsymbolic-functions"
         (cd "${rock%%:*}" && luarocks --lua-version 5.1 --tree "$srcdir/rocks" \
-            make --deps-mode=none "$srcdir/${rock#*:}.rockspec")
+            make --deps-mode=none "$srcdir/${rock#*:}.rockspec" LIBFLAG="$libflag")
     done
 
     # CMake runs translations/translated/generate-translation-stats.lua, which
@@ -79,6 +84,7 @@ build() {
         -DCMAKE_INSTALL_LIBDIR=lib \
         -DLUA_INCLUDE_DIR=/usr/include/lua5.1 \
         -DUSE_SANITIZER="" \
+        -DBUILD_TESTING=OFF \
         -DUSE_UPDATER=OFF \
         -DUSE_FONTS=OFF
     cmake --build build
@@ -87,9 +93,6 @@ build() {
 package() {
     cd mudlet
     DESTDIR="$pkgdir" cmake --install build
-
-    # Development files of the bundled QTagEdit widget, not needed at runtime
-    rm -r "$pkgdir/usr/include" "$pkgdir/usr/lib/cmake" "$pkgdir/usr/lib/libQTagEdit.a"
 
     # On Linux Mudlet prepends <binary dir>/lib/?.so to package.cpath, so
     # the rocks stay private and can't clash with system Lua 5.1 modules.
