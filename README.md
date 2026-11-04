@@ -1,6 +1,6 @@
 # mudlet-aur
 
-An Arch Linux PKGBUILD for [Mudlet](https://www.mudlet.org) 5.1.0, the MUD client.
+An Arch Linux PKGBUILD for [Mudlet](https://www.mudlet.org) 5.1.1, the MUD client.
 
 The [`mudlet` AUR package](https://aur.archlinux.org/packages/mudlet) is stuck at 4.19.1 and no longer builds, because upstream removed that release's tarball. This is a rewrite for Mudlet 5, which moved to Qt 6 and CMake. I plan to take over the AUR package once AUR registration reopens; until then, you can build it from here.
 

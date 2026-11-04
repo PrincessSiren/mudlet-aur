@@ -8,7 +8,7 @@
 # Contributor: Xabre <xabre @archlinux.info>
 
 pkgname=mudlet
-pkgver=5.1.0
+pkgver=5.1.1
 pkgrel=1
 _lrexlib_ver=2.9.4
 _luasql_ver=2.6.0     # Mudlet's DB.lua breaks on LuaSQL >= 2.8 (system lua51-sql-sqlite)
@@ -38,7 +38,7 @@ source=("https://www.mudlet.org/wp-content/files/Mudlet-${pkgver}.tar.xz"
         "https://luarocks.org/lua-zip-0.2-0.rockspec"
         "https://luarocks.org/lua-yajl-${_luayajl_ver}-1.rockspec")
 noextract=("Mudlet-${pkgver}.tar.xz")
-sha256sums=('bd23e5c01ed9593b8c9eddbec2c02c17ff9ea988959d8962c3626e43f17b03ce'
+sha256sums=('5efab5442de50f835c9af0da8714b48627879a3e421f932817ad5eb95eb073b9'
             'SKIP'
             'SKIP'
             'SKIP'
