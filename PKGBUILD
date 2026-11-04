@@ -77,6 +77,9 @@ build() {
     export LUA_CPATH="$srcdir/rocks/lib/lua/5.1/?.so;;"
 
     cd mudlet
+    # Unset, CMake tags the build "-dev-<sha>"; upstream's release builds set
+    # it to an empty string to get a plain release version
+    export MUDLET_VERSION_BUILD=
     export WITH_OWN_QTKEYCHAIN=NO
     cmake -S . -B build -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
