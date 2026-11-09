@@ -103,6 +103,10 @@ package() {
     cd mudlet
     DESTDIR="$pkgdir" cmake --install build
 
+    # Upstream installs mudlet-lua's busted specs and fixtures regardless of
+    # BUILD_TESTING; nothing reads them at runtime
+    rm -r "$pkgdir/usr/share/mudlet/tests"
+
     # On Linux Mudlet prepends <binary dir>/lib/?.so to package.cpath, so
     # the rocks stay private and can't clash with system Lua 5.1 modules.
     # Qt takes <binary dir> from the path the program was started as, so a
