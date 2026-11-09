@@ -8,7 +8,7 @@
 # Contributor: Xabre <xabre @archlinux.info>
 
 pkgname=mudlet
-pkgver=5.0.1
+pkgver=5.1.1
 pkgrel=1
 _lrexlib_ver=2.9.4
 _luasql_ver=2.6.0     # Mudlet's DB.lua breaks on LuaSQL >= 2.8 (system lua51-sql-sqlite)
@@ -26,7 +26,8 @@ makedepends=('cmake' 'ninja' 'boost' 'luarocks' 'git')
 optdepends=('ttf-bitstream-vera: default font'
             'ttf-ubuntu-font-family: default font'
             'noto-fonts-emoji: emoji font support'
-            'hunspell-en_us: spell checking')
+            'hunspell-en_us: US English spell checking'
+            'hunspell-en_gb: British English spell checking')
 conflicts=('mudlet-git')
 source=("https://www.mudlet.org/wp-content/files/Mudlet-${pkgver}.tar.xz"
         "lrexlib::git+https://github.com/rrthomas/lrexlib.git#tag=rel-${_lrexlib_ver//./-}"
@@ -38,7 +39,7 @@ source=("https://www.mudlet.org/wp-content/files/Mudlet-${pkgver}.tar.xz"
         "https://luarocks.org/lua-zip-0.2-0.rockspec"
         "https://luarocks.org/lua-yajl-${_luayajl_ver}-1.rockspec")
 noextract=("Mudlet-${pkgver}.tar.xz")
-sha256sums=('ff07ac3e56816e4fa5786a90201d8d423a813d7912215d9f050e84e799685c74'
+sha256sums=('5efab5442de50f835c9af0da8714b48627879a3e421f932817ad5eb95eb073b9'
             'SKIP'
             'SKIP'
             'SKIP'
@@ -63,8 +64,13 @@ build() {
     local rock
     for rock in lrexlib:lrexlib-pcre2-${_lrexlib_ver}-1 luasql:luasql-sqlite3-2.6.1-3 lua-zip:lua-zip-0.2-0 \
                 lua-yajl:lua-yajl-${_luayajl_ver}-1; do
+        # lrexlib and libssh both export buffer_free, and libssh gets loaded
+        # into Mudlet through Qt Multimedia's ffmpeg backend. Bind lrexlib's
+        # own calls locally so they don't end up in libssh's copy.
+        local libflag="-shared"
+        [[ ${rock%%:*} == lrexlib ]] && libflag+=" -Wl,-Bsymbolic-functions"
         (cd "${rock%%:*}" && luarocks --lua-version 5.1 --tree "$srcdir/rocks" \
-            make --deps-mode=none "$srcdir/${rock#*:}.rockspec")
+            make --deps-mode=none "$srcdir/${rock#*:}.rockspec" LIBFLAG="$libflag")
     done
 
     # CMake runs translations/translated/generate-translation-stats.lua, which
@@ -72,13 +78,22 @@ build() {
     export LUA_CPATH="$srcdir/rocks/lib/lua/5.1/?.so;;"
 
     cd mudlet
+    # Unset, CMake tags the build "-dev-<sha>"; upstream's release builds set
+    # it to an empty string to get a plain release version
+    export MUDLET_VERSION_BUILD=
     export WITH_OWN_QTKEYCHAIN=NO
+    # Bundled edbee-lib bakes __FILE__ into its messages, and CMake passes
+    # absolute paths, so the binary would reference $srcdir. Use the same
+    # mapping makepkg's debug option does, so the two never disagree.
+    local _prefix_map="-ffile-prefix-map=$srcdir=${DBGSRCDIR:-/usr/src/debug}/$pkgbase"
+    export CFLAGS+=" $_prefix_map" CXXFLAGS+=" $_prefix_map"
     cmake -S . -B build -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DCMAKE_INSTALL_LIBDIR=lib \
         -DLUA_INCLUDE_DIR=/usr/include/lua5.1 \
         -DUSE_SANITIZER="" \
+        -DBUILD_TESTING=OFF \
         -DUSE_UPDATER=OFF \
         -DUSE_FONTS=OFF
     cmake --build build
@@ -88,8 +103,9 @@ package() {
     cd mudlet
     DESTDIR="$pkgdir" cmake --install build
 
-    # Development files of the bundled QTagEdit widget, not needed at runtime
-    rm -r "$pkgdir/usr/include" "$pkgdir/usr/lib/cmake" "$pkgdir/usr/lib/libQTagEdit.a"
+    # Upstream installs mudlet-lua's busted specs and fixtures regardless of
+    # BUILD_TESTING; nothing reads them at runtime
+    rm -r "$pkgdir/usr/share/mudlet/tests"
 
     # On Linux Mudlet prepends <binary dir>/lib/?.so to package.cpath, so
     # the rocks stay private and can't clash with system Lua 5.1 modules.

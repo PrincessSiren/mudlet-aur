@@ -1,6 +1,6 @@
 # mudlet-aur
 
-An Arch Linux PKGBUILD for [Mudlet](https://www.mudlet.org) 5.0.1, the MUD client.
+An Arch Linux PKGBUILD for [Mudlet](https://www.mudlet.org) 5.1.1, the MUD client.
 
 The [`mudlet` AUR package](https://aur.archlinux.org/packages/mudlet) is stuck at 4.19.1 and no longer builds, because upstream removed that release's tarball. This is a rewrite for Mudlet 5, which moved to Qt 6 and CMake. I plan to take over the AUR package once AUR registration reopens; until then, you can build it from here.
 
@@ -14,11 +14,21 @@ makepkg -si
 
 This replaces an installed 4.19.1 `mudlet` package. The compile takes a while.
 
+### Spell checking
+
+Mudlet checks the input line's spelling with system Hunspell dictionaries from `/usr/share/hunspell/`, and none are installed by default. Install US English, British English, or both:
+
+```sh
+sudo pacman -S --asdeps hunspell-en_us hunspell-en_gb
+```
+
+Some MUDs, Achaea among them, use British spelling, so `en_GB` is worth having even if you write in US English. Each profile picks its dictionary in its preferences. Until the one it uses is installed, Mudlet shows a warning when the profile loads.
+
 ## What's tested
 
-- Builds in a clean chroot (`extra-x86_64-build`) with only official-repo dependencies, so no AUR helpers are needed.
+- Builds in a clean chroot (`extra-x86_64-build`) with only official-repo dependencies, so no AUR helpers are needed. With the chroot's default `debug` option it also builds a `mudlet-debug` package.
 - namcap reports no errors.
-- At runtime, the database API works (`db:create`, `db:add`, `db:fetch`), and the bundled Lua modules load (regex, JSON, zip, LuaSQL).
+- In the GUI, the database API works (`db:create`, `db:add`, `db:fetch`), and the bundled Lua modules load and work (regex, JSON, zip, LuaSQL).
 
 ## How it differs from the 4.19.1 package
 
