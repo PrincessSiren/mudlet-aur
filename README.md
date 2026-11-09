@@ -14,6 +14,16 @@ makepkg -si
 
 This replaces an installed 4.19.1 `mudlet` package. The compile takes a while.
 
+### Spell checking
+
+Mudlet checks the input line's spelling with system Hunspell dictionaries from `/usr/share/hunspell/`, and none are installed by default. Install US English, British English, or both:
+
+```sh
+sudo pacman -S --asdeps hunspell-en_us hunspell-en_gb
+```
+
+Some MUDs, Achaea among them, use British spelling, so `en_GB` is worth having even if you write in US English. Each profile picks its dictionary in its preferences. Until the one it uses is installed, Mudlet shows a warning when the profile loads.
+
 ## What's tested
 
 - Builds in a clean chroot (`extra-x86_64-build`) with only official-repo dependencies, so no AUR helpers are needed.

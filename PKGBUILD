@@ -26,7 +26,8 @@ makedepends=('cmake' 'ninja' 'boost' 'luarocks' 'git')
 optdepends=('ttf-bitstream-vera: default font'
             'ttf-ubuntu-font-family: default font'
             'noto-fonts-emoji: emoji font support'
-            'hunspell-en_us: spell checking')
+            'hunspell-en_us: US English spell checking'
+            'hunspell-en_gb: British English spell checking')
 conflicts=('mudlet-git')
 source=("https://www.mudlet.org/wp-content/files/Mudlet-${pkgver}.tar.xz"
         "lrexlib::git+https://github.com/rrthomas/lrexlib.git#tag=rel-${_lrexlib_ver//./-}"
