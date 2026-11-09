@@ -81,6 +81,11 @@ build() {
     # it to an empty string to get a plain release version
     export MUDLET_VERSION_BUILD=
     export WITH_OWN_QTKEYCHAIN=NO
+    # Bundled edbee-lib bakes __FILE__ into its messages, and CMake passes
+    # absolute paths, so the binary would reference $srcdir. Use the same
+    # mapping makepkg's debug option does, so the two never disagree.
+    local _prefix_map="-ffile-prefix-map=$srcdir=${DBGSRCDIR:-/usr/src/debug}/$pkgbase"
+    export CFLAGS+=" $_prefix_map" CXXFLAGS+=" $_prefix_map"
     cmake -S . -B build -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
