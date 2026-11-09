@@ -26,9 +26,9 @@ Some MUDs, Achaea among them, use British spelling, so `en_GB` is worth having e
 
 ## What's tested
 
-- Builds in a clean chroot (`extra-x86_64-build`) with only official-repo dependencies, so no AUR helpers are needed.
+- Builds in a clean chroot (`extra-x86_64-build`) with only official-repo dependencies, so no AUR helpers are needed. With the chroot's default `debug` option it also builds a `mudlet-debug` package.
 - namcap reports no errors.
-- At runtime, the database API works (`db:create`, `db:add`, `db:fetch`), and the bundled Lua modules load (regex, JSON, zip, LuaSQL).
+- In the GUI, the database API works (`db:create`, `db:add`, `db:fetch`), and the bundled Lua modules load and work (regex, JSON, zip, LuaSQL).
 
 ## How it differs from the 4.19.1 package
 
